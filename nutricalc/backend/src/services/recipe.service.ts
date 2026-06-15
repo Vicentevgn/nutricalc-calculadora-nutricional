@@ -17,9 +17,21 @@ export class RecipeService {
 
     static async addIngredient(
         recipeId: string,
+        userId: string,
         ingredientId: string,
         quantity: number
     ) {
+        const recipe = await prisma.recipe.findFirst({
+            where: {
+                id: recipeId,
+                userId,
+            },
+        });
+
+        if (!recipe) {
+            throw new Error("Receita não encontrada");
+        }
+
         return prisma.recipeIngredient.create({
             data: {
                 recipeId,
@@ -29,9 +41,15 @@ export class RecipeService {
         });
     }
 
-    static async findById(id: string) {
-        return prisma.recipe.findUnique({
-            where: { id },
+    static async findById(
+        recipeId: string,
+        userId: string
+    ) {
+        return prisma.recipe.findFirst({
+            where: {
+                id: recipeId,
+                userId,
+            },
             include: {
                 ingredients: {
                     include: {
@@ -43,9 +61,15 @@ export class RecipeService {
         });
     }
 
-    static async getNutrition(recipeId: string) {
-        const recipe = await prisma.recipe.findUnique({
-            where: { id: recipeId },
+    static async getNutrition(
+        recipeId: string,
+        userId: string
+    ) {
+        const recipe = await prisma.recipe.findFirst({
+            where: {
+                id: recipeId,
+                userId,
+            },
             include: {
                 ingredients: {
                     include: {
@@ -56,7 +80,7 @@ export class RecipeService {
         });
 
         if (!recipe) {
-            throw new Error("Recipe not found");
+            throw new Error("Receita não encontrada");
         }
 
         const nutrition = {
@@ -87,7 +111,6 @@ export class RecipeService {
             nutrition.sodium += ingredient.sodium * factor;
         }
 
-        //Arredondamento padrão ANVISA
         const roundedNutrition = {
             calories: Math.round(nutrition.calories),
             carbohydrates: Number(nutrition.carbohydrates.toFixed(1)),
@@ -100,10 +123,8 @@ export class RecipeService {
             sodium: Math.round(nutrition.sodium),
         };
 
-        //Rotulagem frontal (RDC 429)
         const frontLabelWarnings: string[] = [];
 
-        //Regras para alimentos sólidos (por 100g)
         if (nutrition.addedSugars >= 15) {
             frontLabelWarnings.push("ALTO EM AÇÚCAR ADICIONADO");
         }

@@ -6,13 +6,13 @@ interface AuthRequest extends Request {
 }
 
 export class RecipeController {
-    static async create(req: Request, res: Response) {
+    static async create(req: AuthRequest, res: Response) {
         try {
-            const { name, userId, totalWeight } = req.body;
+            const { name, totalWeight } = req.body;
 
             const recipe = await RecipeService.create(
                 String(name),
-                String(userId),
+                req.userId,
                 Number(totalWeight)
             );
 
@@ -26,7 +26,7 @@ export class RecipeController {
         }
     }
 
-    static async addIngredient(req: Request, res: Response) {
+    static async addIngredient(req: AuthRequest, res: Response) {
         try {
             const recipeId = String(req.params.id);
 
@@ -34,6 +34,7 @@ export class RecipeController {
 
             const result = await RecipeService.addIngredient(
                 recipeId,
+                req.userId,
                 String(ingredientId),
                 Number(quantity)
             );
@@ -48,11 +49,12 @@ export class RecipeController {
         }
     }
 
-    static async findById(req: Request, res: Response) {
+    static async findById(req: AuthRequest, res: Response) {
         try {
-            const id = String(req.params.id);
-
-            const recipe = await RecipeService.findById(id);
+            const recipe = await RecipeService.findById(
+                String(req.params.id),
+                req.userId
+            );
 
             if (!recipe) {
                 return res.status(404).json({
@@ -70,11 +72,12 @@ export class RecipeController {
         }
     }
 
-    static async getNutrition(req: Request, res: Response) {
+    static async getNutrition(req: AuthRequest, res: Response) {
         try {
-            const id = String(req.params.id);
-
-            const result = await RecipeService.getNutrition(id);
+            const result = await RecipeService.getNutrition(
+                String(req.params.id),
+                req.userId
+            );
 
             return res.json(result);
         } catch (error) {
@@ -88,12 +91,12 @@ export class RecipeController {
 
     static async list(req: AuthRequest, res: Response) {
         try {
-            const userId = req.userId;
-
-            const recipes = await RecipeService.listByUser(userId);
+            const recipes = await RecipeService.listByUser(req.userId);
 
             return res.json(recipes);
         } catch (error) {
+            console.error(error);
+
             return res.status(500).json({
                 error: "Erro ao listar receitas",
             });
