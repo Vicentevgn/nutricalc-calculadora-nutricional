@@ -102,4 +102,32 @@ export class RecipeController {
             });
         }
     }
+
+    static async createComplete(
+        req: AuthRequest,
+        res: Response
+    ) {
+        try {
+            const {
+                name,
+                totalWeight,
+                ingredients,
+            } = req.body;
+
+            const recipe = await RecipeService.createComplete(
+                req.userId,
+                String(name),
+                Number(totalWeight),
+                ingredients
+            );
+
+            return res.status(201).json(recipe);
+        } catch (error) {
+            console.error(error);
+
+            return res.status(500).json({
+                error: "Erro ao criar receita",
+            });
+        }
+    }
 }

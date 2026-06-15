@@ -169,4 +169,41 @@ export class RecipeService {
             },
         });
     }
+
+    static async createComplete(
+        userId: string,
+        name: string,
+        totalWeight: number,
+        ingredients: {
+            ingredientId: string;
+            quantity: number;
+        }[]
+    ) {
+        if (!ingredients?.length) {
+            throw new Error(
+                "A receita deve possuir ao menos um ingrediente"
+            );
+        }
+
+        return prisma.$transaction(async (tx) => {
+
+            const recipe = await tx.recipe.create({
+                data: {
+                    name,
+                    totalWeight,
+                    userId,
+                },
+            });
+
+            await tx.recipeIngredient.createMany({
+                data: ingredients.map((ingredient) => ({
+                    recipeId: recipe.id,
+                    ingredientId: ingredient.ingredientId,
+                    quantity: ingredient.quantity,
+                })),
+            });
+
+            return recipe;
+        });
+    }
 }
