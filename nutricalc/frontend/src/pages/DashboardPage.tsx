@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 
 interface Recipe {
@@ -19,6 +20,8 @@ interface Recipe {
 export default function DashboardPage() {
     const [recipes, setRecipes] = useState<Recipe[]>([]);
     const [search, setSearch] = useState("");
+
+    const navigate = useNavigate();
 
     async function loadRecipes() {
         try {
@@ -53,6 +56,10 @@ export default function DashboardPage() {
         localStorage.removeItem("@nutricalc:token");
 
         window.location.href = "/login";
+    }
+
+    function handleNewRecipe() {
+        navigate("/recipes/new");
     }
 
     return (
@@ -93,7 +100,10 @@ export default function DashboardPage() {
                         </p>
                     </div>
 
-                    <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-2xl font-semibold transition shadow-lg shadow-emerald-100">
+                    <button
+                        onClick={handleNewRecipe}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-2xl font-semibold transition shadow-lg shadow-emerald-100"
+                    >
                         + Nova Receita
                     </button>
                 </div>
@@ -131,17 +141,17 @@ export default function DashboardPage() {
                                         </h3>
 
                                         <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-500">
-                      <span>
-                        {recipe.totalWeight} g
-                      </span>
+                                            <span>
+                                                {recipe.totalWeight} g
+                                            </span>
 
                                             <span>
-                        {recipe.ingredients.length} ingredientes
-                      </span>
+                                                {recipe.ingredients.length} ingredientes
+                                            </span>
 
                                             <span>
-                        {new Date(recipe.createdAt).toLocaleDateString("pt-BR")}
-                      </span>
+                                                {new Date(recipe.createdAt).toLocaleDateString("pt-BR")}
+                                            </span>
                                         </div>
 
                                         <p className="mt-4 text-sm text-gray-600">
@@ -156,7 +166,10 @@ export default function DashboardPage() {
 
                                     {/* Ações */}
                                     <div className="flex gap-3">
-                                        <button className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-4 py-2 rounded-xl font-medium transition">
+                                        <button
+                                            onClick={() => navigate(`/recipes/${recipe.id}`)}
+                                            className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-4 py-2 rounded-xl font-medium transition"
+                                        >
                                             Editar
                                         </button>
                                     </div>
