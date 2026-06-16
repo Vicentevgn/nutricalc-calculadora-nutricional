@@ -45,6 +45,8 @@ model Recipe {
 
   totalWeight Float
 
+  servings Int @default(1)
+
   userId String
   user   User   @relation(fields: [userId], references: [id])
 

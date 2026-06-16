@@ -4,13 +4,15 @@ export class RecipeService {
     static async create(
         name: string,
         userId: string,
-        totalWeight: number
+        totalWeight: number,
+        servings: number
     ) {
         return prisma.recipe.create({
             data: {
                 name,
                 userId,
                 totalWeight,
+                servings,
             },
         });
     }
@@ -142,6 +144,7 @@ export class RecipeService {
                 id: recipe.id,
                 name: recipe.name,
                 totalWeight: recipe.totalWeight,
+                servings: recipe.servings,
             },
 
             nutrition: roundedNutrition,
@@ -174,6 +177,7 @@ export class RecipeService {
         userId: string,
         name: string,
         totalWeight: number,
+        servings: number,
         ingredients: {
             ingredientId: string;
             quantity: number;
@@ -186,11 +190,11 @@ export class RecipeService {
         }
 
         return prisma.$transaction(async (tx) => {
-
             const recipe = await tx.recipe.create({
                 data: {
                     name,
                     totalWeight,
+                    servings,
                     userId,
                 },
             });

@@ -8,12 +8,17 @@ interface AuthRequest extends Request {
 export class RecipeController {
     static async create(req: AuthRequest, res: Response) {
         try {
-            const { name, totalWeight } = req.body;
+            const {
+                name,
+                totalWeight,
+                servings,
+            } = req.body;
 
             const recipe = await RecipeService.create(
                 String(name),
                 req.userId,
-                Number(totalWeight)
+                Number(totalWeight),
+                Number(servings)
             );
 
             return res.status(201).json(recipe);
@@ -91,7 +96,9 @@ export class RecipeController {
 
     static async list(req: AuthRequest, res: Response) {
         try {
-            const recipes = await RecipeService.listByUser(req.userId);
+            const recipes = await RecipeService.listByUser(
+                req.userId
+            );
 
             return res.json(recipes);
         } catch (error) {
@@ -111,15 +118,18 @@ export class RecipeController {
             const {
                 name,
                 totalWeight,
+                servings,
                 ingredients,
             } = req.body;
 
-            const recipe = await RecipeService.createComplete(
-                req.userId,
-                String(name),
-                Number(totalWeight),
-                ingredients
-            );
+            const recipe =
+                await RecipeService.createComplete(
+                    req.userId,
+                    String(name),
+                    Number(totalWeight),
+                    Number(servings),
+                    ingredients
+                );
 
             return res.status(201).json(recipe);
         } catch (error) {
