@@ -1,12 +1,7 @@
 import { prisma } from "../lib/prisma";
 
 export class RecipeService {
-    static async create(
-        name: string,
-        userId: string,
-        totalWeight: number,
-        servings: number
-    ) {
+    static async create(name: string, userId: string, totalWeight: number, servings: number) {
         return prisma.recipe.create({
             data: {
                 name,
@@ -17,12 +12,7 @@ export class RecipeService {
         });
     }
 
-    static async addIngredient(
-        recipeId: string,
-        userId: string,
-        ingredientId: string,
-        quantity: number
-    ) {
+    static async addIngredient(recipeId: string, userId: string, ingredientId: string, quantity: number) {
         const recipe = await prisma.recipe.findFirst({
             where: {
                 id: recipeId,
@@ -43,10 +33,7 @@ export class RecipeService {
         });
     }
 
-    static async findById(
-        recipeId: string,
-        userId: string
-    ) {
+    static async findById(recipeId: string, userId: string) {
         return prisma.recipe.findFirst({
             where: {
                 id: recipeId,
@@ -63,10 +50,7 @@ export class RecipeService {
         });
     }
 
-    static async getNutrition(
-        recipeId: string,
-        userId: string
-    ) {
+    static async getNutrition(recipeId: string, userId: string) {
         const recipe = await prisma.recipe.findFirst({
             where: {
                 id: recipeId,
@@ -113,30 +97,104 @@ export class RecipeService {
             nutrition.sodium += ingredient.sodium * factor;
         }
 
-        const roundedNutrition = {
+        // Total da receita
+        const nutritionTotal = {
             calories: Math.round(nutrition.calories),
-            carbohydrates: Number(nutrition.carbohydrates.toFixed(1)),
-            proteins: Number(nutrition.proteins.toFixed(1)),
-            totalFats: Number(nutrition.totalFats.toFixed(1)),
-            saturatedFats: Number(nutrition.saturatedFats.toFixed(1)),
-            totalSugars: Number(nutrition.totalSugars.toFixed(1)),
-            addedSugars: Number(nutrition.addedSugars.toFixed(1)),
-            fiber: Number(nutrition.fiber.toFixed(1)),
+            carbohydrates: Number(
+                nutrition.carbohydrates.toFixed(1)
+            ),
+            proteins: Number(
+                nutrition.proteins.toFixed(1)
+            ),
+            totalFats: Number(
+                nutrition.totalFats.toFixed(1)
+            ),
+            saturatedFats: Number(
+                nutrition.saturatedFats.toFixed(1)
+            ),
+            totalSugars: Number(
+                nutrition.totalSugars.toFixed(1)
+            ),
+            addedSugars: Number(
+                nutrition.addedSugars.toFixed(1)
+            ),
+            fiber: Number(
+                nutrition.fiber.toFixed(1)
+            ),
             sodium: Math.round(nutrition.sodium),
         };
 
+        // Por porção
+        const nutritionPerServing = {
+            calories: Math.round(
+                nutrition.calories / recipe.servings
+            ),
+            carbohydrates: Number(
+                (
+                    nutrition.carbohydrates /
+                    recipe.servings
+                ).toFixed(1)
+            ),
+            proteins: Number(
+                (
+                    nutrition.proteins /
+                    recipe.servings
+                ).toFixed(1)
+            ),
+            totalFats: Number(
+                (
+                    nutrition.totalFats /
+                    recipe.servings
+                ).toFixed(1)
+            ),
+            saturatedFats: Number(
+                (
+                    nutrition.saturatedFats /
+                    recipe.servings
+                ).toFixed(1)
+            ),
+            totalSugars: Number(
+                (
+                    nutrition.totalSugars /
+                    recipe.servings
+                ).toFixed(1)
+            ),
+            addedSugars: Number(
+                (
+                    nutrition.addedSugars /
+                    recipe.servings
+                ).toFixed(1)
+            ),
+            fiber: Number(
+                (
+                    nutrition.fiber /
+                    recipe.servings
+                ).toFixed(1)
+            ),
+            sodium: Math.round(
+                nutrition.sodium / recipe.servings
+            ),
+        };
+
+        // Rotulagem frontal (receita inteira)
         const frontLabelWarnings: string[] = [];
 
         if (nutrition.addedSugars >= 15) {
-            frontLabelWarnings.push("ALTO EM AÇÚCAR ADICIONADO");
+            frontLabelWarnings.push(
+                "ALTO EM AÇÚCAR ADICIONADO"
+            );
         }
 
         if (nutrition.saturatedFats >= 6) {
-            frontLabelWarnings.push("ALTO EM GORDURA SATURADA");
+            frontLabelWarnings.push(
+                "ALTO EM GORDURA SATURADA"
+            );
         }
 
         if (nutrition.sodium >= 600) {
-            frontLabelWarnings.push("ALTO EM SÓDIO");
+            frontLabelWarnings.push(
+                "ALTO EM SÓDIO"
+            );
         }
 
         return {
@@ -147,7 +205,9 @@ export class RecipeService {
                 servings: recipe.servings,
             },
 
-            nutrition: roundedNutrition,
+            nutritionTotal,
+
+            nutritionPerServing,
 
             frontLabelWarnings,
         };
@@ -173,16 +233,7 @@ export class RecipeService {
         });
     }
 
-    static async createComplete(
-        userId: string,
-        name: string,
-        totalWeight: number,
-        servings: number,
-        ingredients: {
-            ingredientId: string;
-            quantity: number;
-        }[]
-    ) {
+    static async createComplete(userId: string, name: string, totalWeight: number, servings: number, ingredients: { ingredientId: string; quantity: number; }[]) {
         if (!ingredients?.length) {
             throw new Error(
                 "A receita deve possuir ao menos um ingrediente"
