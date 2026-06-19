@@ -9,7 +9,6 @@ router.post("/", authMiddleware, RecipeController.create);
 
 // @ts-ignore
 router.get("/", authMiddleware, RecipeController.list)
-// @ts-ignore
 
 // @ts-ignore
 router.post("/complete", authMiddleware, RecipeController.createComplete);
@@ -22,5 +21,11 @@ router.get("/:id/nutrition", authMiddleware, RecipeController.getNutrition);
 
 // @ts-ignore
 router.get("/:id", authMiddleware, RecipeController.findById);
+
+// @ts-ignore
+router.put("/:id", authMiddleware, RecipeController.update);
+
+// @ts-ignore
+router.delete("/:id", authMiddleware, RecipeController.delete);
 
 export default router;

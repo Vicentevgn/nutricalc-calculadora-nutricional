@@ -261,4 +261,83 @@ export class RecipeService {
             return recipe;
         });
     }
+
+    static async update(recipeId: string, userId: string, name: string, totalWeight: number, servings: number, ingredients: { ingredientId: string; quantity: number; }[]) {
+        const recipe = await prisma.recipe.findFirst({
+            where: {
+                id: recipeId,
+                userId,
+            },
+        });
+
+        if (!recipe) {
+            throw new Error("Receita não encontrada");
+        }
+
+        return prisma.$transaction(async (tx) => {
+            await tx.recipe.update({
+                where: {
+                    id: recipeId,
+                },
+                data: {
+                    name,
+                    totalWeight,
+                    servings,
+                },
+            });
+
+            await tx.recipeIngredient.deleteMany({
+                where: {
+                    recipeId,
+                },
+            });
+
+            await tx.recipeIngredient.createMany({
+                data: ingredients.map((ingredient) => ({
+                    recipeId,
+                    ingredientId: ingredient.ingredientId,
+                    quantity: ingredient.quantity,
+                })),
+            });
+
+            return tx.recipe.findUnique({
+                where: {
+                    id: recipeId,
+                },
+                include: {
+                    ingredients: {
+                        include: {
+                            ingredient: true,
+                        },
+                    },
+                },
+            });
+        });
+    }
+
+    static async delete(recipeId: string, userId: string
+    ) {
+        const recipe = await prisma.recipe.findFirst({
+            where: {
+                id: recipeId,
+                userId,
+            },
+        });
+
+        if (!recipe) {
+            throw new Error("Receita não encontrada");
+        }
+
+        await prisma.recipeIngredient.deleteMany({
+            where: {
+                recipeId,
+            },
+        });
+
+        await prisma.recipe.delete({
+            where: {
+                id: recipeId,
+            },
+        });
+    }
 }

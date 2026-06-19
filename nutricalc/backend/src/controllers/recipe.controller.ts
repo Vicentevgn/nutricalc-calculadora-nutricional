@@ -110,10 +110,7 @@ export class RecipeController {
         }
     }
 
-    static async createComplete(
-        req: AuthRequest,
-        res: Response
-    ) {
+    static async createComplete(req: AuthRequest, res: Response) {
         try {
             const {
                 name,
@@ -137,6 +134,51 @@ export class RecipeController {
 
             return res.status(500).json({
                 error: "Erro ao criar receita",
+            });
+        }
+    }
+
+    static async update(req: AuthRequest, res: Response) {
+        try {
+            const {
+                name,
+                totalWeight,
+                servings,
+                ingredients,
+            } = req.body;
+
+            const recipe = await RecipeService.update(
+                String(req.params.id),
+                req.userId,
+                String(name),
+                Number(totalWeight),
+                Number(servings),
+                ingredients
+            );
+
+            return res.json(recipe);
+        } catch (error) {
+            console.error(error);
+
+            return res.status(500).json({
+                error: "Erro ao atualizar receita",
+            });
+        }
+    }
+
+    static async delete(req: AuthRequest, res: Response) {
+        try {
+            await RecipeService.delete(
+                String(req.params.id),
+                req.userId
+            );
+
+            return res.status(204).send();
+        } catch (error) {
+            console.error(error);
+
+            return res.status(500).json({
+                error: "Erro ao excluir receita",
             });
         }
     }
