@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
+import { Trash2 } from "lucide-react";
 
 interface Recipe {
     id: string;
@@ -60,6 +61,28 @@ export default function DashboardPage() {
 
     function handleNewRecipe() {
         navigate("/recipes/new");
+    }
+
+    async function handleDelete(id: string) {
+        const token = localStorage.getItem("@nutricalc:token");
+
+        const confirmed = window.confirm(
+            "Deseja realmente excluir esta receita?"
+        );
+
+        if (!confirmed) return;
+
+        try {
+            await api.delete(`/recipes/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            loadRecipes();
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     return (
@@ -172,8 +195,11 @@ export default function DashboardPage() {
                                         >
                                             Editar
                                         </button>
+                                        <Trash2
+                                            className="text-red-500 cursor-pointer"
+                                            onClick={() => handleDelete(recipe.id)}
+                                        />
                                     </div>
-
                                 </div>
                             </div>
                         ))
