@@ -2,6 +2,7 @@ import { ArrowLeft, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../services/api";
+import { calculateNutrition, calculatePerServing, getFrontLabelWarnings } from "../utils/nutrition";
 
 interface RecipeIngredient {
     ingredientId: string;
@@ -49,8 +50,7 @@ export default function RecipeEditorPage() {
     const [totalWeight, setTotalWeight] =
         useState<number | "">("");
 
-    const [servings, setServings] =
-        useState<number | "">(1);
+    const [servings, setServings] = useState<number>(1);
 
     const [ingredients, setIngredients] = useState<
         RecipeIngredient[]
@@ -63,96 +63,15 @@ export default function RecipeEditorPage() {
         useState<Ingredient[]>([]);
 
     const nutrition = useMemo(() => {
-        return ingredients.reduce(
-            (acc, ingredient) => {
-                const factor = ingredient.quantity / 100;
-
-                acc.calories += ingredient.calories * factor;
-                acc.carbohydrates +=
-                    ingredient.carbohydrates * factor;
-                acc.proteins +=
-                    ingredient.proteins * factor;
-                acc.totalFats +=
-                    ingredient.totalFats * factor;
-                acc.saturatedFats +=
-                    ingredient.saturatedFats * factor;
-                acc.totalSugars +=
-                    ingredient.totalSugars * factor;
-                acc.addedSugars +=
-                    ingredient.addedSugars * factor;
-                acc.fiber +=
-                    ingredient.fiber * factor;
-                acc.sodium +=
-                    ingredient.sodium * factor;
-
-                return acc;
-            },
-            {
-                calories: 0,
-                carbohydrates: 0,
-                proteins: 0,
-                totalFats: 0,
-                saturatedFats: 0,
-                totalSugars: 0,
-                addedSugars: 0,
-                fiber: 0,
-                sodium: 0,
-            }
-        );
+        return calculateNutrition(ingredients);
     }, [ingredients]);
 
     const nutritionPerServing = useMemo(() => {
-        const portions =
-            Number(servings) > 0
-                ? Number(servings)
-                : 1;
-
-        return {
-            calories:
-                nutrition.calories / portions,
-
-            carbohydrates:
-                nutrition.carbohydrates / portions,
-
-            proteins:
-                nutrition.proteins / portions,
-
-            totalFats:
-                nutrition.totalFats / portions,
-
-            saturatedFats:
-                nutrition.saturatedFats / portions,
-
-            totalSugars:
-                nutrition.totalSugars / portions,
-
-            addedSugars:
-                nutrition.addedSugars / portions,
-
-            fiber:
-                nutrition.fiber / portions,
-
-            sodium:
-                nutrition.sodium / portions,
-        };
+        return calculatePerServing(nutrition, servings);
     }, [nutrition, servings]);
 
     const frontLabelWarnings = useMemo(() => {
-        const warnings: string[] = [];
-
-        if (nutritionPerServing.addedSugars >= 15) {
-            warnings.push("ALTO EM AÇÚCAR ADICIONADO");
-        }
-
-        if (nutritionPerServing.saturatedFats >= 6) {
-            warnings.push("ALTO EM GORDURA SATURADA");
-        }
-
-        if (nutritionPerServing.sodium >= 600) {
-            warnings.push("ALTO EM SÓDIO");
-        }
-
-        return warnings;
+        return getFrontLabelWarnings(nutritionPerServing);
     }, [nutritionPerServing]);
 
     async function loadRecipe() {
@@ -414,13 +333,7 @@ export default function RecipeEditorPage() {
                                     <input
                                         type="number"
                                         value={servings}
-                                        onChange={(e) =>
-                                            setServings(
-                                                e.target.value === ""
-                                                    ? ""
-                                                    : Number(e.target.value)
-                                            )
-                                        }
+                                        onChange={(e) => setServings(Number(e.target.value))}
                                         placeholder="Ex: 18"
                                         className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-500"
                                     />

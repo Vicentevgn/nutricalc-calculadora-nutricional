@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
-import { Trash2 } from "lucide-react";
+import { Trash2, Eye, Pencil } from "lucide-react";
 
 interface Recipe {
     id: string;
@@ -186,19 +186,37 @@ export default function DashboardPage() {
                                             {recipe.ingredients.length > 3 && " ..."}
                                         </p>
                                     </div>
-
                                     {/* Ações */}
                                     <div className="flex gap-3">
                                         <button
-                                            onClick={() => navigate(`/recipes/${recipe.id}`)}
-                                            className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-4 py-2 rounded-xl font-medium transition"
+                                            onClick={() =>
+                                                navigate(`/recipes/${recipe.id}/view`)
+                                            }
+                                            className="text-blue-600 hover:text-blue-800 transition"
+                                            title="Visualizar"
                                         >
-                                            Editar
+                                            <Eye size={20} />
                                         </button>
-                                        <Trash2
-                                            className="text-red-500 cursor-pointer"
-                                            onClick={() => handleDelete(recipe.id)}
-                                        />
+
+                                        <button
+                                            onClick={() =>
+                                                navigate(`/recipes/${recipe.id}`)
+                                            }
+                                            className="text-emerald-600 hover:text-emerald-800 transition"
+                                            title="Editar"
+                                        >
+                                            <Pencil size={20} />
+                                        </button>
+
+                                        <button
+                                            onClick={() =>
+                                                handleDelete(recipe.id)
+                                            }
+                                            className="text-red-600 hover:text-red-800 transition"
+                                            title="Excluir"
+                                        >
+                                            <Trash2 size={20} />
+                                        </button>
                                     </div>
                                 </div>
                             </div>

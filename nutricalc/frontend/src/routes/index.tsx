@@ -4,6 +4,7 @@ import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import DashboardPage from "../pages/DashboardPage";
 import RecipeEditorPage from "../pages/RecipeEditorPage";
+import RecipeViewPage from "../pages/RecipeViewPage";
 
 export function AppRoutes() {
     return (
@@ -27,6 +28,12 @@ export function AppRoutes() {
                 <Route
                     path="/recipes/:id"
                     element={<RecipeEditorPage />}
+                />
+
+                {/* Criar receita */}
+                <Route
+                    path="/recipes/:id/view"
+                    element={<RecipeViewPage />}
                 />
             </Routes>
         </BrowserRouter>
