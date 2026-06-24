@@ -2,7 +2,8 @@ import { ArrowLeft, Printer } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../services/api";
-import { calculatePer100g, calculateDailyValues } from "../utils/nutrition.ts";
+import { calculatePer100g, calculateDailyValues, getFrontLabelWarnings } from "../utils/nutrition.ts";
+import { generateNutritionPdf } from "../utils/generateNutritionPdf";
 
 export default function RecipeViewPage() {
     const navigate = useNavigate();
@@ -29,10 +30,6 @@ export default function RecipeViewPage() {
     useEffect(() => {
         if (id) loadRecipe();
     }, [id]);
-
-    function handlePrint() {
-        window.print();
-    }
 
     // -----------------------------
     // CÁLCULO NUTRICIONAL
@@ -104,24 +101,13 @@ export default function RecipeViewPage() {
     }, [nutritionPerServing]);
 
     const frontLabelWarnings = useMemo(() => {
-        if (!nutritionPerServing) return [];
+        if (!nutritionPer100g) return [];
 
-        const warnings: string[] = [];
+        return getFrontLabelWarnings(
+            nutritionPer100g
+        );
+    }, [nutritionPer100g]);
 
-        if (nutritionPerServing.addedSugars >= 15) {
-            warnings.push("ALTO EM AÇÚCAR ADICIONADO");
-        }
-
-        if (nutritionPerServing.saturatedFats >= 6) {
-            warnings.push("ALTO EM GORDURA SATURADA");
-        }
-
-        if (nutritionPerServing.sodium >= 600) {
-            warnings.push("ALTO EM SÓDIO");
-        }
-
-        return warnings;
-    }, [nutritionPerServing]);
 
     if (!recipe || !nutrition || !nutritionPerServing || !nutritionPer100g || !dailyValues) {
         return <div className="p-8">Carregando...</div>;
@@ -143,17 +129,27 @@ export default function RecipeViewPage() {
                     </button>
 
                     <button
-                        onClick={handlePrint}
+                        onClick={() =>
+                            generateNutritionPdf({
+                                recipeName: recipe.name,
+                                servings: recipe.servings,
+                                weightPerServing,
+                                nutritionPer100g,
+                                nutritionPerServing,
+                                dailyValues,
+                                frontLabelWarnings,
+                            })
+                        }
                         className="
                             flex items-center gap-2
-                            bg-emerald-600
+                            bg-gray-800
                             text-white
                             px-4 py-2
                             rounded-xl
                         "
                     >
                         <Printer size={18} />
-                        Imprimir
+                        Gerar PDF
                     </button>
                 </div>
             </header>

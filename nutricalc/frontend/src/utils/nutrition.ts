@@ -45,28 +45,21 @@ export function calculatePerServing(nutrition: any, servings: number) {
     };
 }
 
-export function getFrontLabelWarnings(nutritionPerServing: any) {
-    const warnings: string[] = [];
-
-    if (nutritionPerServing.addedSugars >= 15) {
-        warnings.push("ALTO EM AÇÚCAR ADICIONADO");
+export function calculatePer100g(nutrition: any, totalWeight: number) {
+    if (!totalWeight || totalWeight <= 0) {
+        return {
+            calories: 0,
+            carbohydrates: 0,
+            proteins: 0,
+            totalFats: 0,
+            saturatedFats: 0,
+            totalSugars: 0,
+            addedSugars: 0,
+            fiber: 0,
+            sodium: 0,
+        };
     }
 
-    if (nutritionPerServing.saturatedFats >= 6) {
-        warnings.push("ALTO EM GORDURA SATURADA");
-    }
-
-    if (nutritionPerServing.sodium >= 600) {
-        warnings.push("ALTO EM SÓDIO");
-    }
-
-    return warnings;
-}
-
-export function calculatePer100g(
-    nutrition: any,
-    totalWeight: number
-) {
     const factor = 100 / totalWeight;
 
     return {
@@ -105,4 +98,22 @@ export function calculateDailyValues(nutritionPerServing: any) {
         fiber: (nutritionPerServing.fiber / VDR.fiber) * 100,
         sodium: (nutritionPerServing.sodium / VDR.sodium) * 100,
     };
+}
+
+export function getFrontLabelWarnings(nutritionPer100g: any) {
+    const warnings: string[] = [];
+
+    if (nutritionPer100g.addedSugars >= 15) {
+        warnings.push("ALTO EM AÇÚCARES ADICIONADOS");
+    }
+
+    if (nutritionPer100g.saturatedFats >= 6) {
+        warnings.push("ALTO EM GORDURAS SATURADAS");
+    }
+
+    if (nutritionPer100g.sodium >= 600) {
+        warnings.push("ALTO EM SÓDIO");
+    }
+
+    return warnings;
 }

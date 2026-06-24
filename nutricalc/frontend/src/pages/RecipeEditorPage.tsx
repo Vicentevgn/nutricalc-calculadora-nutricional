@@ -2,7 +2,7 @@ import { ArrowLeft, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../services/api";
-import { calculateNutrition, calculatePerServing, getFrontLabelWarnings } from "../utils/nutrition";
+import { calculateNutrition, calculatePerServing, getFrontLabelWarnings, calculatePer100g } from "../utils/nutrition";
 
 interface RecipeIngredient {
     ingredientId: string;
@@ -70,9 +70,24 @@ export default function RecipeEditorPage() {
         return calculatePerServing(nutrition, servings);
     }, [nutrition, servings]);
 
+    const nutritionPer100g = useMemo(() => {
+        if (!totalWeight || Number(totalWeight) <= 0) {
+            return null;
+        }
+
+        return calculatePer100g(
+            nutrition,
+            Number(totalWeight)
+        );
+    }, [nutrition, totalWeight]);
+
     const frontLabelWarnings = useMemo(() => {
-        return getFrontLabelWarnings(nutritionPerServing);
-    }, [nutritionPerServing]);
+        if (!nutritionPer100g) {
+            return [];
+        }
+
+        return getFrontLabelWarnings(nutritionPer100g);
+    }, [nutritionPer100g]);
 
     async function loadRecipe() {
         if (!id) return;
@@ -454,113 +469,208 @@ export default function RecipeEditorPage() {
                                 Tabela Nutricional
                             </h2>
 
-                            <div className="grid md:grid-cols-2 gap-8">
+                            <div className="space-y-3">
 
-                                <div>
-                                    <h3 className="font-semibold text-lg text-gray-700 mb-4">
-                                        Receita Completa
-                                    </h3>
+                                {/* HEADER (opcional mas melhora MUITO leitura) */}
+                                <div className="flex justify-between text-sm text-gray-500 border-b pb-2">
+                                    <span className="w-40">Nutriente</span>
 
-                                    <div className="space-y-3">
-                                        <div className="flex justify-between">
-                                            <span>Valor Energético</span>
-                                            <span>{nutrition.calories.toFixed(0)} kcal</span>
-                                        </div>
-
-                                        <div className="flex justify-between">
-                                            <span>Carboidratos</span>
-                                            <span>{nutrition.carbohydrates.toFixed(1)} g</span>
-                                        </div>
-
-                                        <div className="flex justify-between">
-                                            <span>Proteínas</span>
-                                            <span>{nutrition.proteins.toFixed(1)} g</span>
-                                        </div>
-
-                                        <div className="flex justify-between">
-                                            <span>Gorduras Totais</span>
-                                            <span>{nutrition.totalFats.toFixed(1)} g</span>
-                                        </div>
-
-                                        <div className="flex justify-between">
-                                            <span>Gorduras Saturadas</span>
-                                            <span>{nutrition.saturatedFats.toFixed(1)} g</span>
-                                        </div>
-
-                                        <div className="flex justify-between">
-                                            <span>Açúcares Totais</span>
-                                            <span>{nutrition.totalSugars.toFixed(1)} g</span>
-                                        </div>
-
-                                        <div className="flex justify-between">
-                                            <span>Açúcares Adicionados</span>
-                                            <span>{nutrition.addedSugars.toFixed(1)} g</span>
-                                        </div>
-
-                                        <div className="flex justify-between">
-                                            <span>Fibra Alimentar</span>
-                                            <span>{nutrition.fiber.toFixed(1)} g</span>
-                                        </div>
-
-                                        <div className="flex justify-between">
-                                            <span>Sódio</span>
-                                            <span>{nutrition.sodium.toFixed(0)} mg</span>
-                                        </div>
+                                    <div className="flex gap-6">
+                                        <span className="w-24 text-right">Receita</span>
+                                        <span className="w-24 text-right">Por porção</span>
+                                        <span className="w-28 text-right">Por 100g</span>
                                     </div>
                                 </div>
 
-                                <div>
-                                    <h3 className="font-semibold text-lg text-gray-700 mb-4">
-                                        Por Porção
-                                    </h3>
+                                {/* VALOR ENERGÉTICO */}
+                                <div className="flex justify-between">
+                                    <span className="w-40">Valor Energético</span>
 
-                                    <div className="space-y-3">
-                                        <div className="flex justify-between">
-                                            <span>Valor Energético</span>
-                                            <span>{nutritionPerServing.calories.toFixed(0)} kcal</span>
-                                        </div>
+                                    <div className="flex gap-6">
+            <span className="w-24 text-right">
+                {nutrition.calories.toFixed(0)} kcal
+            </span>
 
-                                        <div className="flex justify-between">
-                                            <span>Carboidratos</span>
-                                            <span>{nutritionPerServing.carbohydrates.toFixed(1)} g</span>
-                                        </div>
+                                        <span className="w-24 text-right">
+                {nutritionPerServing.calories.toFixed(0)} kcal
+            </span>
 
-                                        <div className="flex justify-between">
-                                            <span>Proteínas</span>
-                                            <span>{nutritionPerServing.proteins.toFixed(1)} g</span>
-                                        </div>
-
-                                        <div className="flex justify-between">
-                                            <span>Gorduras Totais</span>
-                                            <span>{nutritionPerServing.totalFats.toFixed(1)} g</span>
-                                        </div>
-
-                                        <div className="flex justify-between">
-                                            <span>Gorduras Saturadas</span>
-                                            <span>{nutritionPerServing.saturatedFats.toFixed(1)} g</span>
-                                        </div>
-
-                                        <div className="flex justify-between">
-                                            <span>Açúcares Totais</span>
-                                            <span>{nutritionPerServing.totalSugars.toFixed(1)} g</span>
-                                        </div>
-
-                                        <div className="flex justify-between">
-                                            <span>Açúcares Adicionados</span>
-                                            <span>{nutritionPerServing.addedSugars.toFixed(1)} g</span>
-                                        </div>
-
-                                        <div className="flex justify-between">
-                                            <span>Fibra Alimentar</span>
-                                            <span>{nutritionPerServing.fiber.toFixed(1)} g</span>
-                                        </div>
-
-                                        <div className="flex justify-between">
-                                            <span>Sódio</span>
-                                            <span>{nutritionPerServing.sodium.toFixed(0)} mg</span>
-                                        </div>
+                                        <span className="w-28 text-right text-gray-500">
+                {nutritionPer100g
+                    ? nutritionPer100g.calories.toFixed(0)
+                    : "-"} kcal
+            </span>
                                     </div>
                                 </div>
+
+                                {/* CARBOIDRATOS */}
+                                <div className="flex justify-between">
+                                    <span className="w-40">Carboidratos</span>
+
+                                    <div className="flex gap-6">
+            <span className="w-24 text-right">
+                {nutrition.carbohydrates.toFixed(1)} g
+            </span>
+
+                                        <span className="w-24 text-right">
+                {nutritionPerServing.carbohydrates.toFixed(1)} g
+            </span>
+
+                                        <span className="w-28 text-right text-gray-500">
+                {nutritionPer100g
+                    ? nutritionPer100g.carbohydrates.toFixed(1)
+                    : "-"} g
+            </span>
+                                    </div>
+                                </div>
+
+                                {/* PROTEÍNAS */}
+                                <div className="flex justify-between">
+                                    <span className="w-40">Proteínas</span>
+
+                                    <div className="flex gap-6">
+            <span className="w-24 text-right">
+                {nutrition.proteins.toFixed(1)} g
+            </span>
+
+                                        <span className="w-24 text-right">
+                {nutritionPerServing.proteins.toFixed(1)} g
+            </span>
+
+                                        <span className="w-28 text-right text-gray-500">
+                {nutritionPer100g
+                    ? nutritionPer100g.proteins.toFixed(1)
+                    : "-"} g
+            </span>
+                                    </div>
+                                </div>
+
+                                {/* GORDURAS TOTAIS */}
+                                <div className="flex justify-between">
+                                    <span className="w-40">Gorduras Totais</span>
+
+                                    <div className="flex gap-6">
+            <span className="w-24 text-right">
+                {nutrition.totalFats.toFixed(1)} g
+            </span>
+
+                                        <span className="w-24 text-right">
+                {nutritionPerServing.totalFats.toFixed(1)} g
+            </span>
+
+                                        <span className="w-28 text-right text-gray-500">
+                {nutritionPer100g
+                    ? nutritionPer100g.totalFats.toFixed(1)
+                    : "-"} g
+            </span>
+                                    </div>
+                                </div>
+
+                                {/* SATURADAS */}
+                                <div className="flex justify-between">
+                                    <span className="w-40">Gorduras Saturadas</span>
+
+                                    <div className="flex gap-6">
+            <span className="w-24 text-right">
+                {nutrition.saturatedFats.toFixed(1)} g
+            </span>
+
+                                        <span className="w-24 text-right">
+                {nutritionPerServing.saturatedFats.toFixed(1)} g
+            </span>
+
+                                        <span className="w-28 text-right text-gray-500">
+                {nutritionPer100g
+                    ? nutritionPer100g.saturatedFats.toFixed(1)
+                    : "-"} g
+            </span>
+                                    </div>
+                                </div>
+
+                                {/* AÇÚCARES TOTAIS */}
+                                <div className="flex justify-between">
+                                    <span className="w-40">Açúcares Totais</span>
+
+                                    <div className="flex gap-6">
+            <span className="w-24 text-right">
+                {nutrition.totalSugars.toFixed(1)} g
+            </span>
+
+                                        <span className="w-24 text-right">
+                {nutritionPerServing.totalSugars.toFixed(1)} g
+            </span>
+
+                                        <span className="w-28 text-right text-gray-500">
+                {nutritionPer100g
+                    ? nutritionPer100g.totalSugars.toFixed(1)
+                    : "-"} g
+            </span>
+                                    </div>
+                                </div>
+
+                                {/* AÇÚCARES ADICIONADOS */}
+                                <div className="flex justify-between">
+                                    <span className="w-40">Açúcares Adicionados</span>
+
+                                    <div className="flex gap-6">
+            <span className="w-24 text-right">
+                {nutrition.addedSugars.toFixed(1)} g
+            </span>
+
+                                        <span className="w-24 text-right">
+                {nutritionPerServing.addedSugars.toFixed(1)} g
+            </span>
+
+                                        <span className="w-28 text-right text-gray-500">
+                {nutritionPer100g
+                    ? nutritionPer100g.addedSugars.toFixed(1)
+                    : "-"} g
+            </span>
+                                    </div>
+                                </div>
+
+                                {/* FIBRA */}
+                                <div className="flex justify-between">
+                                    <span className="w-40">Fibra Alimentar</span>
+
+                                    <div className="flex gap-6">
+            <span className="w-24 text-right">
+                {nutrition.fiber.toFixed(1)} g
+            </span>
+
+                                        <span className="w-24 text-right">
+                {nutritionPerServing.fiber.toFixed(1)} g
+            </span>
+
+                                        <span className="w-28 text-right text-gray-500">
+                {nutritionPer100g
+                    ? nutritionPer100g.fiber.toFixed(1)
+                    : "-"} g
+            </span>
+                                    </div>
+                                </div>
+
+                                {/* SÓDIO */}
+                                <div className="flex justify-between">
+                                    <span className="w-40">Sódio</span>
+
+                                    <div className="flex gap-6">
+            <span className="w-24 text-right">
+                {nutrition.sodium.toFixed(0)} mg
+            </span>
+
+                                        <span className="w-24 text-right">
+                {nutritionPerServing.sodium.toFixed(0)} mg
+            </span>
+
+                                        <span className="w-28 text-right text-gray-500">
+                {nutritionPer100g
+                    ? nutritionPer100g.sodium.toFixed(0)
+                    : "-"} mg
+            </span>
+                                    </div>
+                                </div>
+
                             </div>
                             <div className="mt-8 pt-8 border-t border-gray-200">
                                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
