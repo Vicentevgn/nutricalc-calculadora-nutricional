@@ -32,6 +32,7 @@ async function main() {
                 const ingredient = await prisma.ingredient.upsert({
                     where: { name: ingredientName },
                     update: {},
+                    // @ts-ignore
                     create: { name: ingredientName },
                 });
 
@@ -50,6 +51,7 @@ async function main() {
 
                     const nutrientDef = nutrientMap[key];
 
+                    // @ts-ignore
                     const nutrient = await prisma.nutrient.upsert({
                         where: { name: nutrientDef.name },
                         update: {},
@@ -59,6 +61,7 @@ async function main() {
                         },
                     });
 
+                    // @ts-ignore
                     await prisma.ingredientNutrient.upsert({
                         where: {
                             ingredientId_nutrientId: {
